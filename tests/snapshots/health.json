@@ -1,0 +1,34 @@
+{
+  "audiveris_available": "<bool>",
+  "exports": [
+    "musicxml",
+    "mxl"
+  ],
+  "formats": [
+    "pdf",
+    "jpg",
+    "jpeg",
+    "png"
+  ],
+  "ok": true,
+  "targets": {
+    "encore": {
+      "free": false,
+      "input": "MusicXML/MIDI",
+      "label": "Encore",
+      "notes": "Use MusicXML quando sua versão suportar; MIDI é fallback menos fiel."
+    },
+    "guitar_pro": {
+      "free": false,
+      "input": "MusicXML",
+      "label": "Guitar Pro",
+      "notes": "Importe MusicXML e revise tablatura, digitação e instrumentos."
+    },
+    "musescore": {
+      "free": true,
+      "input": "MusicXML",
+      "label": "MuseScore Studio",
+      "notes": "Melhor editor gratuito para revisar piano e guitarra depois do OMR."
+    }
+  }
+}

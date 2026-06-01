@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Partitura Converter</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <p class="eyebrow">PDF/JPG/PNG → MusicXML</p>
+        <h1>Converter partituras para MuseScore, Guitar Pro e Encore</h1>
+        <p>
+          Envie partituras limpas em PDF, JPG ou PNG. O app usa Audiveris para OMR e gera MusicXML quando disponível.
+        </p>
+      </section>
+
+      <section class="card">
+        <div id="health" class="status">Verificando Audiveris…</div>
+        <form id="form">
+          <input id="file" name="files" type="file" accept=".pdf,.jpg,.jpeg,.png" multiple required />
+          <button type="submit">Converter</button>
+        </form>
+        <pre id="result">Aguardando arquivo.</pre>
+      </section>
+
+      <section class="notes">
+        <h2>Fluxos de saída</h2>
+        <div id="targets" class="targets"></div>
+      </section>
+    </main>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
