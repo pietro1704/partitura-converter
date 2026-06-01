@@ -5,9 +5,7 @@
   color: #eef2ff;
 }
 
-body {
-  margin: 0;
-}
+body { margin: 0; }
 
 main {
   width: min(920px, calc(100vw - 32px));
@@ -15,9 +13,7 @@ main {
   padding: 56px 0;
 }
 
-.hero, .card, .notes {
-  margin-bottom: 24px;
-}
+.hero, .card, .notes { margin-bottom: 24px; }
 
 .eyebrow {
   color: #8bd3ff;
@@ -32,7 +28,7 @@ h1 {
   margin: 0 0 16px;
 }
 
-.card {
+.card, .target {
   background: #181d29;
   border: 1px solid #293246;
   border-radius: 18px;
@@ -55,9 +51,7 @@ form {
   flex-wrap: wrap;
 }
 
-input, button {
-  font: inherit;
-}
+input, button { font: inherit; }
 
 input {
   flex: 1 1 280px;
@@ -86,3 +80,11 @@ pre {
   padding: 16px;
   min-height: 110px;
 }
+
+.targets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.target h3 { margin-top: 0; }

@@ -2,12 +2,12 @@
 
 App local para converter partituras em PDF/JPG/PNG para formatos editáveis.
 
-Fluxo inicial:
+Fluxo:
 
-- Entrada: PDF, JPG, PNG
-- OMR: Audiveris CLI, quando instalado
+- Entrada: PDF, JPG, PNG, um ou vários arquivos
+- OMR: Audiveris CLI
 - Saída: MusicXML `.mxl`/`.musicxml`
-- Uso posterior: MuseScore, Guitar Pro e Encore via importação de MusicXML/MIDI
+- Edição final: MuseScore Studio, Guitar Pro ou Encore via importação
 
 ## Limitação importante
 
@@ -17,15 +17,17 @@ Conversão de imagem/PDF para partitura editável depende de OMR e pode exigir r
 
 - Python 3.11+
 - Java 17+
-- Audiveris CLI opcional, mas necessário para conversão real
+- Audiveris CLI para conversão real
 
-## Rodar
+## Rodar com mise
 
 ```bash
-python3 -m venv .venv
+cd ~/Developer/partitura-converter
+mise trust
+python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload
+mise run web
 ```
 
 Abra:
@@ -37,21 +39,40 @@ http://127.0.0.1:8000
 ## Testes
 
 ```bash
-pytest
+source .venv/bin/activate
+mise run test
 ```
 
-## Instalar Audiveris
+## Audiveris
 
-Baixe em:
+Checar:
+
+```bash
+./scripts/check-audiveris.sh
+```
+
+Se o executável não se chamar `audiveris`, rode assim:
+
+```bash
+AUDIVERIS_CMD=/caminho/para/audiveris mise run web
+```
+
+Downloads:
 
 ```text
-https://github.com/Audiveris/audiveris
+https://github.com/Audiveris/audiveris/releases
 ```
-
-Depois garanta que o comando `audiveris` esteja no PATH.
 
 ## Formatos-alvo
 
-- MuseScore: importar MusicXML diretamente
-- Guitar Pro: importar MusicXML no Guitar Pro
-- Encore: importar MusicXML/MIDI quando suportado pela versão
+- MuseScore Studio: gratuito; melhor destino para revisar MusicXML de piano e guitarra.
+- Guitar Pro: importe MusicXML e revise tablatura/digitação.
+- Encore: importe MusicXML quando suportado; MIDI é fallback menos fiel.
+
+## API
+
+```text
+GET  /api/health
+POST /api/convert        file=<PDF/JPG/PNG>
+POST /api/convert/batch  files=<PDF/JPG/PNG>...
+```

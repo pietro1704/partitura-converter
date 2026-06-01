@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.omr import convert_with_audiveris, validate_input
+from app.omr import audiveris_available, convert_with_audiveris, target_profiles, validate_input
 
 ROOT = Path(__file__).resolve().parents[1]
 UPLOAD_DIR = ROOT / "storage" / "uploads"
@@ -17,7 +16,7 @@ STATIC_DIR = ROOT / "static"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-app = FastAPI(title="Partitura Converter", version="0.1.0")
+app = FastAPI(title="Partitura Converter", version="0.2.0")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
@@ -30,14 +29,14 @@ def index() -> FileResponse:
 def health() -> dict[str, object]:
     return {
         "ok": True,
-        "audiveris_available": shutil.which("audiveris") is not None,
+        "audiveris_available": audiveris_available(),
         "formats": ["pdf", "jpg", "jpeg", "png"],
         "exports": ["musicxml", "mxl"],
+        "targets": target_profiles(),
     }
 
 
-@app.post("/api/convert")
-async def convert(file: UploadFile = File(...)) -> dict[str, object]:
+async def save_upload(file: UploadFile) -> Path:
     if not file.filename:
         raise HTTPException(status_code=400, detail="Arquivo sem nome.")
     try:
@@ -50,15 +49,35 @@ async def convert(file: UploadFile = File(...)) -> dict[str, object]:
     with input_path.open("wb") as handle:
         while chunk := await file.read(1024 * 1024):
             handle.write(chunk)
+    return input_path
 
-    result = convert_with_audiveris(input_path, OUTPUT_DIR)
+
+def serialize_result(filename: str, result) -> dict[str, object]:
     return {
+        "filename": filename,
         "job_id": result.job_id,
         "status": result.status,
         "message": result.message,
         "outputs": [f"/api/download/{path}" for path in result.output_files],
         "log": result.log[-4000:],
     }
+
+
+@app.post("/api/convert")
+async def convert(file: UploadFile = File(...)) -> dict[str, object]:
+    input_path = await save_upload(file)
+    result = convert_with_audiveris(input_path, OUTPUT_DIR)
+    return serialize_result(Path(file.filename or input_path.name).name, result)
+
+
+@app.post("/api/convert/batch")
+async def convert_batch(files: list[UploadFile] = File(...)) -> dict[str, object]:
+    results = []
+    for file in files:
+        input_path = await save_upload(file)
+        result = convert_with_audiveris(input_path, OUTPUT_DIR)
+        results.append(serialize_result(Path(file.filename or input_path.name).name, result))
+    return {"count": len(results), "results": results}
 
 
 @app.get("/api/download/{job_id}/{filename}")

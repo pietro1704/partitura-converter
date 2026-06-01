@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import uuid
@@ -19,8 +20,47 @@ class ConversionResult:
     log: str
 
 
+def audiveris_command_name() -> str:
+    return os.environ.get("AUDIVERIS_CMD", "audiveris")
+
+
 def audiveris_available() -> bool:
-    return shutil.which("audiveris") is not None
+    command = audiveris_command_name()
+    return Path(command).exists() if "/" in command else shutil.which(command) is not None
+
+
+def build_audiveris_command(input_path: Path, output_dir: Path) -> list[str]:
+    return [
+        audiveris_command_name(),
+        "-batch",
+        "-export",
+        "-output",
+        str(output_dir),
+        str(input_path),
+    ]
+
+
+def target_profiles() -> dict[str, dict[str, object]]:
+    return {
+        "musescore": {
+            "label": "MuseScore Studio",
+            "free": True,
+            "input": "MusicXML",
+            "notes": "Melhor editor gratuito para revisar piano e guitarra depois do OMR.",
+        },
+        "guitar_pro": {
+            "label": "Guitar Pro",
+            "free": False,
+            "input": "MusicXML",
+            "notes": "Importe MusicXML e revise tablatura, digitação e instrumentos.",
+        },
+        "encore": {
+            "label": "Encore",
+            "free": False,
+            "input": "MusicXML/MIDI",
+            "notes": "Use MusicXML quando sua versão suportar; MIDI é fallback menos fiel.",
+        },
+    }
 
 
 def validate_input(filename: str) -> str:
@@ -41,21 +81,13 @@ def convert_with_audiveris(input_path: Path, output_root: Path, timeout_seconds:
         return ConversionResult(
             job_id=job_id,
             status="missing_omr",
-            message="Audiveris não está instalado ou não está no PATH. Instale Audiveris para conversão real.",
+            message="Audiveris não está instalado ou AUDIVERIS_CMD não aponta para um executável. Instale Audiveris para conversão real.",
             output_files=[],
-            log="command not found: audiveris",
+            log=f"command not found: {audiveris_command_name()}",
         )
 
-    command = [
-        "audiveris",
-        "-batch",
-        "-export",
-        "-output",
-        str(job_output),
-        str(input_path),
-    ]
     completed = subprocess.run(
-        command,
+        build_audiveris_command(input_path, job_output),
         capture_output=True,
         text=True,
         timeout=timeout_seconds,
