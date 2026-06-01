@@ -19,7 +19,7 @@ async function refreshHealth() {
   const data = await response.json();
   healthEl.textContent = data.audiveris_available
     ? 'Audiveris encontrado: conversão real habilitada.'
-    : 'Audiveris não encontrado: instale ou defina AUDIVERIS_CMD para habilitar conversão real.';
+    : 'Audiveris não encontrado: PDF/JPG/PNG precisam dele. Arquivos .gp ainda convertem para MusicXML sem Audiveris.';
   healthEl.className = data.audiveris_available ? 'status ok' : 'status warn';
   renderTargets(data.targets || {});
 }

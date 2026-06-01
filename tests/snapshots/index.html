@@ -9,17 +9,17 @@
   <body>
     <main>
       <section class="hero">
-        <p class="eyebrow">PDF/JPG/PNG → MusicXML</p>
+        <p class="eyebrow">PDF/JPG/PNG/GP → MusicXML</p>
         <h1>Converter partituras para MuseScore, Guitar Pro e Encore</h1>
         <p>
-          Envie partituras limpas em PDF, JPG ou PNG. O app usa Audiveris para OMR e gera MusicXML quando disponível.
+          Envie partituras limpas em PDF, JPG ou PNG para OMR, ou arquivos Guitar Pro `.gp` para extração direta de MusicXML.
         </p>
       </section>
 
       <section class="card">
         <div id="health" class="status">Verificando Audiveris…</div>
         <form id="form">
-          <input id="file" name="files" type="file" accept=".pdf,.jpg,.jpeg,.png" multiple required />
+          <input id="file" name="files" type="file" accept=".pdf,.jpg,.jpeg,.png,.gp" multiple required />
           <button type="submit">Converter</button>
         </form>
         <pre id="result">Aguardando arquivo.</pre>

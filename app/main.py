@@ -31,8 +31,8 @@ def health() -> dict[str, object]:
     return {
         "ok": True,
         "audiveris_available": audiveris_available(),
-        "formats": ["pdf", "jpg", "jpeg", "png"],
-        "exports": ["musicxml", "mxl"],
+        "formats": ["pdf", "jpg", "jpeg", "png", "gp"],
+        "exports": ["musicxml", "mxl", "encore", "guitarpro"],
         "timeout_seconds": conversion_timeout_seconds(),
         "targets": target_profiles(),
     }
@@ -90,9 +90,9 @@ async def convert_batch(files: list[UploadFile] = File(...)) -> dict[str, object
     return {"count": len(results), "results": results}
 
 
-@app.get("/api/download/{job_id}/{filename}")
-def download(job_id: str, filename: str) -> FileResponse:
-    path = OUTPUT_DIR / job_id / filename
+@app.get("/api/download/{job_id}/{file_path:path}")
+def download(job_id: str, file_path: str) -> FileResponse:
+    path = OUTPUT_DIR / job_id / file_path
     if not path.exists() or not path.is_file():
         raise HTTPException(status_code=404, detail="Arquivo não encontrado.")
-    return FileResponse(path, filename=filename)
+    return FileResponse(path, filename=path.name)

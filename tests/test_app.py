@@ -5,6 +5,8 @@ from fastapi.testclient import TestClient
 from app.main import app, conversion_timeout_seconds
 from app.omr import build_audiveris_command, target_profiles, validate_input
 
+from tests.test_gpif import write_minimal_gp
+
 client = TestClient(app)
 
 
@@ -15,13 +17,16 @@ def test_health_reports_supported_formats():
     assert data['ok'] is True
     assert 'pdf' in data['formats']
     assert 'musicxml' in data['exports']
+    assert 'encore' in data['exports']
+    assert 'guitarpro' in data['exports']
     assert 'musescore' in data['targets']
 
 
-def test_validate_input_accepts_pdf_and_images():
+def test_validate_input_accepts_pdf_images_and_gp():
     assert validate_input('score.pdf') == '.pdf'
     assert validate_input('score.JPG') == '.jpg'
     assert validate_input('score.png') == '.png'
+    assert validate_input('score.gp') == '.gp'
 
 
 def test_validate_input_rejects_unknown_extension():
@@ -62,6 +67,21 @@ def test_conversion_timeout_seconds_uses_env_with_safe_fallback(monkeypatch):
     assert conversion_timeout_seconds() == 300
     monkeypatch.setenv('OMR_TIMEOUT_SECONDS', '-2')
     assert conversion_timeout_seconds() == 1
+
+
+def test_convert_gp_returns_musicxml_encore_and_guitarpro_outputs(tmp_path):
+    gp_path = tmp_path / 'tiny.gp'
+    write_minimal_gp(gp_path)
+    response = client.post(
+        '/api/convert',
+        files={'file': ('tiny.gp', gp_path.read_bytes(), 'application/octet-stream')},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data['status'] == 'completed'
+    assert any(output.endswith('.musicxml') for output in data['outputs'])
+    assert any('/encore/' in output for output in data['outputs'])
+    assert any(output.endswith('.gp') for output in data['outputs'])
 
 
 def test_convert_batch_accepts_multiple_files_when_omr_missing():

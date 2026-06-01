@@ -7,8 +7,10 @@ import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
+from app.gpif import convert_gp_to_musicxml
 
-ALLOWED_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png"}
+
+ALLOWED_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png", ".gp"}
 
 
 @dataclass(frozen=True)
@@ -71,8 +73,43 @@ def validate_input(filename: str) -> str:
     return suffix
 
 
-def convert_with_audiveris(input_path: Path, output_root: Path, timeout_seconds: int = 300) -> ConversionResult:
+def convert_gp_package(input_path: Path, output_root: Path) -> ConversionResult:
     validate_input(input_path.name)
+    job_id = uuid.uuid4().hex[:12]
+    job_output = output_root / job_id
+    job_output.mkdir(parents=True, exist_ok=True)
+    stem = input_path.stem
+    musicxml = job_output / f"{stem}.musicxml"
+    encore_dir = job_output / "encore"
+    guitarpro_dir = job_output / "guitarpro"
+    encore_dir.mkdir(exist_ok=True)
+    guitarpro_dir.mkdir(exist_ok=True)
+    try:
+        converted = convert_gp_to_musicxml(input_path, musicxml)
+        encore_file = encore_dir / f"{stem}.musicxml"
+        guitarpro_file = guitarpro_dir / input_path.name
+        shutil.copy2(musicxml, encore_file)
+        shutil.copy2(input_path, guitarpro_file)
+    except Exception as exc:
+        return ConversionResult(job_id, "failed", "Falha ao converter Guitar Pro GPIF para MusicXML.", [], repr(exc))
+    outputs = [
+        str(musicxml.relative_to(output_root)),
+        str(encore_file.relative_to(output_root)),
+        str(guitarpro_file.relative_to(output_root)),
+    ]
+    return ConversionResult(
+        job_id,
+        "completed",
+        f"GP convertido: {converted.parts} partes, {converted.measures} compassos. MusicXML pronto para MuseScore/Encore; GP original preservado para Guitar Pro.",
+        outputs,
+        "",
+    )
+
+
+def convert_with_audiveris(input_path: Path, output_root: Path, timeout_seconds: int = 300) -> ConversionResult:
+    suffix = validate_input(input_path.name)
+    if suffix == ".gp":
+        return convert_gp_package(input_path, output_root)
     job_id = uuid.uuid4().hex[:12]
     job_output = output_root / job_id
     job_output.mkdir(parents=True, exist_ok=True)

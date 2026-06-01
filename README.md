@@ -4,10 +4,10 @@ App local para converter partituras em PDF/JPG/PNG para formatos editáveis.
 
 Fluxo:
 
-- Entrada: PDF, JPG, PNG, um ou vários arquivos
-- OMR: Audiveris CLI
-- Saída: MusicXML `.mxl`/`.musicxml`
-- Edição final: MuseScore Studio, Guitar Pro ou Encore via importação
+- Entrada: PDF, JPG, PNG, GP, um ou vários arquivos
+- PDF/JPG/PNG: OMR via Audiveris CLI
+- GP moderno: extração direta do `Content/score.gpif` para MusicXML
+- Saída: MusicXML `.musicxml`/`.mxl`, pacote Encore via MusicXML e arquivo Guitar Pro preservado
 
 ## Limitação importante
 
@@ -75,6 +75,6 @@ https://github.com/Audiveris/audiveris/releases
 
 ```text
 GET  /api/health
-POST /api/convert        file=<PDF/JPG/PNG>
-POST /api/convert/batch  files=<PDF/JPG/PNG>...
+POST /api/convert        file=<PDF/JPG/PNG/GP>
+POST /api/convert/batch  files=<PDF/JPG/PNG/GP>...
 ```

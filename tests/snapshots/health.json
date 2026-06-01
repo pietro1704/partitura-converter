@@ -2,13 +2,16 @@
   "audiveris_available": "<bool>",
   "exports": [
     "musicxml",
-    "mxl"
+    "mxl",
+    "encore",
+    "guitarpro"
   ],
   "formats": [
     "pdf",
     "jpg",
     "jpeg",
-    "png"
+    "png",
+    "gp"
   ],
   "ok": true,
   "targets": {
