@@ -54,8 +54,10 @@ Checar:
 Se o executável não se chamar `audiveris`, rode assim:
 
 ```bash
-AUDIVERIS_CMD=/caminho/para/audiveris mise run web
+OMR_TIMEOUT_SECONDS=1800 AUDIVERIS_CMD=/caminho/para/audiveris mise run web
 ```
+
+`OMR_TIMEOUT_SECONDS` é útil para PDFs grandes; o padrão é 300 segundos.
 
 Downloads:
 

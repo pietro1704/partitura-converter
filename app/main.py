@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -32,6 +33,7 @@ def health() -> dict[str, object]:
         "audiveris_available": audiveris_available(),
         "formats": ["pdf", "jpg", "jpeg", "png"],
         "exports": ["musicxml", "mxl"],
+        "timeout_seconds": conversion_timeout_seconds(),
         "targets": target_profiles(),
     }
 
@@ -52,6 +54,14 @@ async def save_upload(file: UploadFile) -> Path:
     return input_path
 
 
+def conversion_timeout_seconds() -> int:
+    raw = os.environ.get("OMR_TIMEOUT_SECONDS", "300")
+    try:
+        return max(1, int(raw))
+    except ValueError:
+        return 300
+
+
 def serialize_result(filename: str, result) -> dict[str, object]:
     return {
         "filename": filename,
@@ -66,7 +76,7 @@ def serialize_result(filename: str, result) -> dict[str, object]:
 @app.post("/api/convert")
 async def convert(file: UploadFile = File(...)) -> dict[str, object]:
     input_path = await save_upload(file)
-    result = convert_with_audiveris(input_path, OUTPUT_DIR)
+    result = convert_with_audiveris(input_path, OUTPUT_DIR, timeout_seconds=conversion_timeout_seconds())
     return serialize_result(Path(file.filename or input_path.name).name, result)
 
 
@@ -75,7 +85,7 @@ async def convert_batch(files: list[UploadFile] = File(...)) -> dict[str, object
     results = []
     for file in files:
         input_path = await save_upload(file)
-        result = convert_with_audiveris(input_path, OUTPUT_DIR)
+        result = convert_with_audiveris(input_path, OUTPUT_DIR, timeout_seconds=conversion_timeout_seconds())
         results.append(serialize_result(Path(file.filename or input_path.name).name, result))
     return {"count": len(results), "results": results}
 

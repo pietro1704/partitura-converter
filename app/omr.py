@@ -86,13 +86,29 @@ def convert_with_audiveris(input_path: Path, output_root: Path, timeout_seconds:
             log=f"command not found: {audiveris_command_name()}",
         )
 
-    completed = subprocess.run(
-        build_audiveris_command(input_path, job_output),
-        capture_output=True,
-        text=True,
-        timeout=timeout_seconds,
-        check=False,
-    )
+    command = build_audiveris_command(input_path, job_output)
+    try:
+        completed = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        partial_log = "\n".join(
+            part.decode(errors="replace") if isinstance(part, bytes) else part
+            for part in [exc.stdout, exc.stderr]
+            if part
+        )
+        return ConversionResult(
+            job_id,
+            "timed_out",
+            f"Audiveris excedeu o limite de {timeout_seconds}s. Tente um PDF menor ou aumente o timeout no backend.",
+            [],
+            partial_log,
+        )
+
     log = "\n".join(part for part in [completed.stdout, completed.stderr] if part)
     outputs = sorted(
         str(path.relative_to(output_root))

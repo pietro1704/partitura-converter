@@ -30,5 +30,6 @@
       "label": "MuseScore Studio",
       "notes": "Melhor editor gratuito para revisar piano e guitarra depois do OMR."
     }
-  }
+  },
+  "timeout_seconds": 300
 }

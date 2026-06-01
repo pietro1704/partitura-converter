@@ -2,7 +2,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from app.main import app
+from app.main import app, conversion_timeout_seconds
 from app.omr import build_audiveris_command, target_profiles, validate_input
 
 client = TestClient(app)
@@ -53,6 +53,15 @@ def test_target_profiles_document_supported_apps():
     assert profiles['musescore']['free'] is True
     assert profiles['guitar_pro']['input'] == 'MusicXML'
     assert profiles['encore']['input'] == 'MusicXML/MIDI'
+
+
+def test_conversion_timeout_seconds_uses_env_with_safe_fallback(monkeypatch):
+    monkeypatch.setenv('OMR_TIMEOUT_SECONDS', '1800')
+    assert conversion_timeout_seconds() == 1800
+    monkeypatch.setenv('OMR_TIMEOUT_SECONDS', 'invalid')
+    assert conversion_timeout_seconds() == 300
+    monkeypatch.setenv('OMR_TIMEOUT_SECONDS', '-2')
+    assert conversion_timeout_seconds() == 1
 
 
 def test_convert_batch_accepts_multiple_files_when_omr_missing():
